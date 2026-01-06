@@ -16,7 +16,6 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(bytes);
     const base64Image = buffer.toString("base64");
 
-    // Switching back to gemini-2.5-flash as requested by user (accepting rate limits)
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
       generationConfig: { responseMimeType: "application/json" }
@@ -42,7 +41,6 @@ export async function POST(req: Request) {
 
     const response = await result.response;
     const text = response.text();
-    console.log("Gemini Raw Response:", text);
 
     try {
       const data = JSON.parse(text);
