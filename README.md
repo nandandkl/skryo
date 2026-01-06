@@ -67,7 +67,3 @@ Skryo is an AI-powered handwriting analysis tool that evaluates the neatness of 
 2.  **Process**: The image is sent securely to the backend API.
 3.  **Analyze**: Python/Node.js backend sends the image to Google's Gemini AI with a specific prompt to evaluate neatness.
 4.  **Result**: The AI returns a JSON response with a score and explanation, which is displayed on the result card.
-
-## License
-
-This project is licensed under the MIT License.
