@@ -27,20 +27,77 @@ export default function Hero({ onUpload, isLoading }: HeroProps) {
     }
   }
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const compressImage = async (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.src = URL.createObjectURL(file)
+      img.onload = () => {
+        const canvas = document.createElement("canvas")
+        let width = img.width
+        let height = img.height
+        const maxDim = 1500
+
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width)
+            width = maxDim
+          } else {
+            width = Math.round((width * maxDim) / height)
+            height = maxDim
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext("2d")
+        ctx?.drawImage(img, 0, 0, width, height)
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name, {
+                type: "image/jpeg",
+                lastModified: Date.now(),
+              })
+              resolve(compressedFile)
+            } else {
+              reject(new Error("Canvas to Blob failed"))
+            }
+          },
+          "image/jpeg",
+          0.8,
+        )
+      }
+      img.onerror = (error) => reject(error)
+    })
+  }
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
 
     const files = e.dataTransfer.files
     if (files && files[0]) {
-      onUpload(files[0])
+      try {
+        const compressed = await compressImage(files[0])
+        onUpload(compressed)
+      } catch (error) {
+        console.error("Compression failed:", error)
+        onUpload(files[0]) // Fallback to original
+      }
     }
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      onUpload(e.target.files[0])
+      try {
+        const compressed = await compressImage(e.target.files[0])
+        onUpload(compressed)
+      } catch (error) {
+        console.error("Compression failed:", error)
+        onUpload(e.target.files[0]) // Fallback
+      }
       setShowUploadOptions(false)
     }
   }
@@ -79,8 +136,8 @@ export default function Hero({ onUpload, isLoading }: HeroProps) {
           onDragOver={handleDrag}
           onDrop={handleDrop}
           className={`relative rounded-2xl border-2 transition-all duration-300 p-12 md:p-16 text-center cursor-pointer group ${dragActive
-              ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
-              : "border-border bg-card/50 hover:border-primary/50 hover:bg-card/70 hover:shadow-lg shadow-md"
+            ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
+            : "border-border bg-card/50 hover:border-primary/50 hover:bg-card/70 hover:shadow-lg shadow-md"
             }`}
         >
           <input

@@ -33,19 +33,23 @@ export default function Home() {
         body: formData,
       })
 
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to analyze image")
+      }
+
       const data = await response.json()
 
       if (data.score !== undefined && data.score !== null) {
         setNeatnessScore(data.score)
         setExplanation(data.explanation || "")
       } else {
-        setNeatnessScore(0)
-        setExplanation("No handwriting Detected")
+        throw new Error("Invalid response format from AI")
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error analyzing image:", error)
       setNeatnessScore(0)
-      setExplanation("No handwriting Detected or AI Service Unavailable")
+      setExplanation(error.message || "No handwriting Detected or AI Service Unavailable")
     } finally {
       setIsLoading(false)
     }
