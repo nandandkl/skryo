@@ -13,7 +13,9 @@ interface HeroProps {
 
 export default function Hero({ onUpload, isLoading }: HeroProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
   const [dragActive, setDragActive] = useState(false)
+  const [showUploadOptions, setShowUploadOptions] = useState(false)
 
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -39,6 +41,19 @@ export default function Hero({ onUpload, isLoading }: HeroProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       onUpload(e.target.files[0])
+      setShowUploadOptions(false)
+    }
+  }
+
+  const handleUploadClick = () => {
+    // Check if we are on a mobile device to show options
+    // Assuming simple check for now, can be improved or just always show for robust UX
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+
+    if (isMobile) {
+      setShowUploadOptions(true)
+    } else {
+      fileInputRef.current?.click()
     }
   }
 
@@ -63,16 +78,24 @@ export default function Hero({ onUpload, isLoading }: HeroProps) {
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
-          className={`relative rounded-2xl border-2 transition-all duration-300 p-12 md:p-16 text-center cursor-pointer group ${
-            dragActive
+          className={`relative rounded-2xl border-2 transition-all duration-300 p-12 md:p-16 text-center cursor-pointer group ${dragActive
               ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
               : "border-border bg-card/50 hover:border-primary/50 hover:bg-card/70 hover:shadow-lg shadow-md"
-          }`}
+            }`}
         >
           <input
             ref={fileInputRef}
             type="file"
             accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+            disabled={isLoading}
+          />
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
             onChange={handleFileChange}
             className="hidden"
             disabled={isLoading}
@@ -111,7 +134,7 @@ export default function Hero({ onUpload, isLoading }: HeroProps) {
 
           {!isLoading && (
             <Button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={handleUploadClick}
               className="mt-10 bg-primary/15 hover:bg-primary/50 text-primary-foreground px-8 py-6 text-base font-semibold rounded-lg shadow-lg hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:scale-105 border border-primary/50"
               disabled={isLoading}
             >
@@ -125,6 +148,46 @@ export default function Hero({ onUpload, isLoading }: HeroProps) {
         <p className="text-center text-sm text-muted-foreground mt-8">
           Supports JPG, PNG, and GIF. Fast, private, and secure.
         </p>
+
+        {/* Upload Options Modal */}
+        {showUploadOptions && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6" onClick={() => setShowUploadOptions(false)}>
+            <div
+              className="w-full max-w-sm bg-background border border-border rounded-xl shadow-2xl p-6 sm:p-8 animate-in slide-in-from-bottom-10 fade-in duration-300"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-bold text-foreground text-center mb-6">Choose an option</h3>
+              <div className="flex flex-col gap-4">
+                <Button
+                  onClick={() => {
+                    cameraInputRef.current?.click()
+                    setShowUploadOptions(false)
+                  }}
+                  className="w-full h-14 text-lg font-medium bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  <span className="mr-2">📸</span> Take Photo
+                </Button>
+                <Button
+                  onClick={() => {
+                    fileInputRef.current?.click()
+                    setShowUploadOptions(false)
+                  }}
+                  className="w-full h-14 text-lg font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                >
+                  <span className="mr-2">🖼️</span> Choose from Gallery
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowUploadOptions(false)}
+                  className="w-full mt-2"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </section>
   )

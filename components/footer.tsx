@@ -18,10 +18,20 @@ export default function Footer() {
           {/* Links */}
           <div className="flex flex-col gap-3">
             <p className="text-sm font-semibold text-foreground">Resources</p>
-            <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+            <a
+              href="https://github.com/nandandkl/skryo#readme"
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Documentation
             </a>
-            <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+            <a
+              href="https://ai.google.dev/"
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               API Reference
             </a>
           </div>
